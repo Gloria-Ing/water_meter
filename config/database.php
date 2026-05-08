@@ -1,19 +1,37 @@
 <?php
 // config/database.php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'water_meter');
+
+// Read database credentials from environment variables (Render)
+$host = getenv('DB_HOST') ?: 'localhost';
+$port = getenv('DB_PORT') ?: 4000;
+$user = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASSWORD') ?: '';
+$database = getenv('DB_NAME') ?: 'water_meter';
+
+// Define constants for backward compatibility
+define('DB_HOST', $host);
+define('DB_USER', $user);
+define('DB_PASS', $password);
+define('DB_NAME', $database);
+define('DB_PORT', $port);
 
 class Database {
     private static $instance = null;
     private $connection;
     
     private function __construct() {
-        $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        $host = DB_HOST;
+        $port = DB_PORT;
+        $user = DB_USER;
+        $password = DB_PASS;
+        $database = DB_NAME;
         
-        if ($this->connection->connect_error) {
-            die("Connection failed: " . $this->connection->connect_error);
+        // Create connection with SSL for TiDB Cloud
+        $this->connection = mysqli_init();
+        mysqli_ssl_set($this->connection, NULL, NULL, NULL, NULL, NULL);
+        
+        if (!$this->connection->real_connect($host, $user, $password, $database, $port, NULL, MYSQLI_CLIENT_SSL)) {
+            die("Connection failed: " . mysqli_connect_error());
         }
         
         $this->connection->set_charset("utf8mb4");
