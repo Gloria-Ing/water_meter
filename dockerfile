@@ -7,7 +7,7 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql
 RUN a2enmod rewrite
 
 # Copy your application to the container
-COPY . /var/www/html/
+COPY WATER_METER/ /var/www/html/
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
