@@ -1,28 +1,31 @@
 <?php
 // config/config.php
+
 session_start();
 
+// App Settings
 define('APP_NAME', 'Water Meter Billing System');
-define('APP_URL', 'http://localhost/water_meter');
 define('TARIFF_RATE', 100);
-define('SMS_ENABLED', true);
-define('DEBUG_MODE', true);
 define('SMS_BALANCE_THRESHOLD', 10000);
-define('SMS_API_KEY', 'YOUR_AFRICASTALKING_API_KEY');
-define('SMS_USERNAME', 'sandbox');
-define('SMS_SENDER_ID', 'WATERMETER');
 
-if (DEBUG_MODE) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
+// Database - Read from Render environment variables
+$host = getenv('DB_HOST') ?: 'localhost';
+$port = getenv('DB_PORT') ?: 4000;
+$user = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASSWORD') ?: '';
+$database = getenv('DB_NAME') ?: 'water_meter_db';
+
+// Create connection with SSL (required for TiDB Cloud)
+$conn = mysqli_init();
+mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
+
+if (!$conn->real_connect($host, $user, $password, $database, $port, NULL, MYSQLI_CLIENT_SSL)) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 
-require_once __DIR__ . '/database.php';
-
+// Helper function
 function getDB() {
-    return Database::getInstance()->getConnection();
+    global $conn;
+    return $conn;
 }
 ?>
